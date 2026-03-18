@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Components — Cross-Reference Search</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #1a56db;
+      --brand-light: #e1effe;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --green: #16a34a;
+      --amber: #d97706;
+      --red: #dc2626;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .topnav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .topnav .logo { font-weight: 700; font-size: 20px; color: var(--brand); }
+    .topnav a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .topnav a:hover { color: var(--text); }
+    .topnav a.active { color: var(--brand); }
+
+    .hero { text-align: center; padding: 48px 24px 24px; }
+    .hero h1 { font-size: 28px; font-weight: 700; }
+    .hero p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+
+    /* --- Simulator controls --- */
+    .sim-card {
+      max-width: 680px;
+      margin: 24px auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 32px;
+    }
+    .sim-card label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .sim-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+    .sim-row button {
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .sim-row button:disabled { opacity: .55; cursor: default; }
+    .sim-row button:hover:not(:disabled) { opacity: .9; }
+
+    .stepper { display: flex; align-items: center; gap: 0; }
+    .stepper button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .stepper button:hover:not(:disabled) { background: #f1f5f9; }
+    .stepper button:disabled { opacity: .4; cursor: default; }
+    .stepper button:first-child { border-radius: 8px 0 0 8px; }
+    .stepper button:last-child { border-radius: 0 8px 8px 0; }
+    .stepper .stepper-value {
+      min-width: 110px;
+      text-align: center;
+      padding: 0 12px;
+      height: 38px;
+      line-height: 38px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--card);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .sim-parts {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sim-chip {
+      padding: 5px 12px;
+      background: var(--brand-light);
+      color: var(--brand);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: monospace;
+    }
+    .sim-timing {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* --- Tabs --- */
+    .tabs-wrap {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      padding: 0 24px;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
+    .tab-btn .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel-status { font-size: 14px; color: var(--muted); padding: 24px 0; text-align: center; }
+    .panel-status.error { color: var(--red); }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .results-table th {
+      text-align: left; font-size: 12px; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--muted); padding: 10px 16px;
+      background: #f1f5f9; border-bottom: 1px solid var(--border);
+    }
+    .results-table td {
+      padding: 12px 16px; font-size: 14px;
+      border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:hover td { background: #f8fafc; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-drop-in { background: #dcfce7; color: var(--green); }
+    .badge-form-fit { background: #fef3c7; color: var(--amber); }
+    .badge-alternate { background: var(--brand-light); color: var(--brand); }
+    .badge-default { background: #f1f5f9; color: var(--muted); }
+
+    .credit-bar {
+      display: flex; justify-content: flex-end; gap: 16px;
+      font-size: 13px; color: var(--muted); margin-top: 10px;
+    }
+
+    .results-meta {
+      display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;
+    }
+    .results-meta h3 { font-size: 16px; font-weight: 600; }
+    .results-meta span { font-size: 13px; color: var(--muted); }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav">
+    <span class="logo">Apex Components</span>
+    <a href="#">Products</a>
+    <a href="#" class="active">Cross-Reference</a>
+    <a href="#">Datasheets</a>
+    <a href="#">Contact</a>
+  </nav>
+
+  <div class="hero">
+    <h1>Cross-Reference Search</h1>
+    <p>Find drop-in and alternate replacements for any electronic component</p>
+  </div>
+
+  <div class="sim-card">
+    <label>API Key</label>
+    <div class="sim-row" style="margin-top:6px">
+      <input type="text" id="apiKeyInput" placeholder="Paste your API key" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:monospace;outline:none" />
+      <button id="apiKeyBtn" style="padding:10px 16px;font-size:13px">Apply</button>
+    </div>
+    <div style="margin-top:20px">
+      <label>Simulation Mode</label>
+      <div class="sim-row">
+        <div class="stepper">
+          <button id="simMinus" type="button">&minus;</button>
+          <div class="stepper-value" id="simValue">1 search</div>
+          <button id="simPlus" type="button">+</button>
+        </div>
+        <button id="simBtn">Run Simulation</button>
+      </div>
+      <div id="simPartsPreview" class="sim-parts"></div>
+      <div id="simTiming" class="sim-timing"></div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:14px;cursor:pointer;text-transform:none;font-weight:500;font-size:14px;color:var(--text)">
+        <input type="checkbox" id="retryToggle" /> Allow retries on 429 (max 2)
+      </label>
+    </div>
+  </div>
+
+  <div id="tabsWrap" class="tabs-wrap hidden">
+    <div id="tabBar" class="tab-bar"></div>
+    <div id="tabPanels"></div>
+  </div>
+
+  <!-- Local dev: <script src="../sdk/v1/wizerr-xref.js"></script> -->
+  <script
+    src="https://app.sandbox.wizerr.ai/wizerr-sdk.js"
+    onload="console.log('[SDK] loaded successfully')"
+    onerror="console.error('[SDK] FAILED to load — check Cross-Origin-Resource-Policy header')"
+  ></script>
+  <script>
+    var API_KEY = 'wzr_trial_a328ea2cc67fe8b4d14b9e31f614808d9585f1b984837c50f47cd6ea0c2f2901';
+
+    var SAMPLE_PARTS = [
+      'TPS24701DGK',
+      'TPS62807YKAR',
+      'NCP137AFCTADJT2G',
+      'GRM316D71C225KA12D',
+    ];
+
+    var retryToggle = document.getElementById('retryToggle');
+    var client;
+    function initClient(key) {
+      try {
+        var retries = retryToggle.checked ? 2 : 0;
+        client = new WizerrXref({ apiKey: key, maxRetries: retries });
+        console.log('[SDK] Client initialized, maxRetries:', retries);
+        return true;
+      } catch (e) {
+        console.error('Failed to create client:', e.message);
+        return false;
+      }
+    }
+    initClient(API_KEY);
+
+    retryToggle.addEventListener('change', function() {
+      initClient(API_KEY);
+    });
+
+    var apiKeyInput = document.getElementById('apiKeyInput');
+    var apiKeyBtn   = document.getElementById('apiKeyBtn');
+    apiKeyInput.value = API_KEY;
+
+    apiKeyBtn.addEventListener('click', function() {
+      var key = apiKeyInput.value.trim();
+      if (!key) { apiKeyInput.focus(); return; }
+      API_KEY = key;
+      if (initClient(key)) {
+        apiKeyBtn.textContent = 'Applied!';
+        setTimeout(function() { apiKeyBtn.textContent = 'Apply'; }, 1500);
+      }
+    });
+
+    var simMinus   = document.getElementById('simMinus');
+    var simPlus    = document.getElementById('simPlus');
+    var simValue   = document.getElementById('simValue');
+    var simBtn     = document.getElementById('simBtn');
+    var simPreview = document.getElementById('simPartsPreview');
+    var simTiming  = document.getElementById('simTiming');
+    var tabsWrap   = document.getElementById('tabsWrap');
+    var tabBar     = document.getElementById('tabBar');
+    var tabPanels  = document.getElementById('tabPanels');
+
+    var simCount = 1;
+    var SIM_MIN = 1;
+    var SIM_MAX = SAMPLE_PARTS.length;
+    var tabStates = [];
+
+    function updateStepper() {
+      simMinus.disabled = simCount <= SIM_MIN;
+      simPlus.disabled  = simCount >= SIM_MAX;
+      simValue.textContent = simCount + (simCount === 1 ? ' search' : ' searches');
+    }
+
+    function updatePreview() {
+      var parts = SAMPLE_PARTS.slice(0, simCount);
+      simPreview.innerHTML = parts.map(function(p) { return '<span class="sim-chip">' + p + '</span>'; }).join('');
+      var timingMap = {
+        1: 'Single request',
+        2: 'Both fire at t=0',
+        3: 'All three fire at t=0',
+        4: 'First 3 fire at t=0, 4th fires at t=1s',
+      };
+      simTiming.textContent = timingMap[simCount];
+      updateStepper();
+    }
+
+    simMinus.addEventListener('click', function() {
+      if (simCount > SIM_MIN) { simCount--; updatePreview(); }
+    });
+    simPlus.addEventListener('click', function() {
+      if (simCount < SIM_MAX) { simCount++; updatePreview(); }
+    });
+    updatePreview();
+
+    function esc(s) {
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function badgeClass(matchType) {
+      if (!matchType) return 'badge badge-default';
+      var t = matchType.toLowerCase().replace(/[\s_-]+/g, '');
+      if (t.indexOf('dropin') >= 0) return 'badge badge-drop-in';
+      if (t.indexOf('formfit') >= 0) return 'badge badge-form-fit';
+      if (t.indexOf('alternate') >= 0) return 'badge badge-alternate';
+      return 'badge badge-default';
+    }
+
+    function formatMatchType(raw) {
+      if (!raw) return '\u2014';
+      return raw.replace(/[_-]/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    }
+
+    function activateTab(idx) {
+      var btns = tabBar.querySelectorAll('.tab-btn');
+      var panels = tabPanels.querySelectorAll('.tab-panel');
+      btns.forEach(function(b, i) { b.classList.toggle('active', i === idx); });
+      panels.forEach(function(p, i) { p.classList.toggle('active', i === idx); });
+    }
+
+    function updateTabLabel(idx) {
+      var btn = tabBar.querySelectorAll('.tab-btn')[idx];
+      if (!btn) return;
+      var st = tabStates[idx];
+      var label = st.part;
+      if (st.loading) {
+        btn.innerHTML = esc(label) + ' <span class="spinner"></span>';
+      } else if (st.error) {
+        btn.innerHTML = esc(label) + ' <span style="color:var(--red)">&#10007;</span>';
+      } else {
+        var count = st.resultCount || 0;
+        btn.innerHTML = esc(label) + ' <span style="color:var(--muted);font-weight:400">(' + count + ')</span>';
+      }
+    }
+
+    function renderPanel(idx, data) {
+      var panel = tabPanels.querySelectorAll('.tab-panel')[idx];
+      if (!panel) return;
+
+      if (data.error) {
+        var errHtml = '<div class="panel-status error">' + esc(data.errorMessage);
+        if (data.errorDetail) {
+          errHtml += '<br><span style="font-size:12px;color:var(--muted)">' + esc(data.errorDetail) + '</span>';
+        }
+        errHtml += '</div>';
+        panel.innerHTML = errHtml;
+        return;
+      }
+
+      var d = data.response;
+      if (!d.results || d.results.length === 0) {
+        panel.innerHTML = '<div class="panel-status">No cross-reference results found.</div>';
+        return;
+      }
+
+      var html = '<div class="results-meta"><h3>Results for ' + esc(d.part_number) + '</h3>';
+      html += '<span>' + d.results_count + ' result' + (d.results_count !== 1 ? 's' : '') + '</span></div>';
+      html += '<table class="results-table"><thead><tr><th>Part Number</th><th>Match Type</th><th>Match Score</th><th>Manufacturer</th><th>Overview</th></tr></thead><tbody>';
+      d.results.forEach(function(r) {
+        var matchType = r.match_type || '';
+        var score = r.match_score != null ? r.match_score : '\u2014';
+        html += '<tr>';
+        html += '<td><strong>' + esc(r.part_number) + '</strong></td>';
+        html += '<td><span class="' + badgeClass(matchType) + '">' + esc(formatMatchType(matchType)) + '</span></td>';
+        html += '<td>' + esc(String(score)) + '</td>';
+        html += '<td>' + esc(r.manufacturer || '\u2014') + '</td>';
+        html += '<td>' + esc(r.description || '\u2014') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      if (d.credit_info) {
+        html += '<div class="credit-bar">';
+        html += '<span>Credits used: <strong>' + d.credit_info.credits_used + '</strong></span>';
+        html += '<span>Remaining: <strong>' + d.credit_info.credits_remaining + '</strong></span>';
+        html += '</div>';
+      }
+
+      panel.innerHTML = html;
+    }
+
+    function fireSearch(idx) {
+      tabStates[idx].loading = true;
+      updateTabLabel(idx);
+
+      var panel = tabPanels.querySelectorAll('.tab-panel')[idx];
+      panel.innerHTML = '<div class="panel-status">Searching\u2026</div>';
+
+      client.search(tabStates[idx].part)
+        .then(function(res) {
+          tabStates[idx].loading = false;
+          tabStates[idx].resultCount = res.data.results_count || 0;
+          updateTabLabel(idx);
+          renderPanel(idx, { response: res.data });
+        })
+        .catch(function(err) {
+          tabStates[idx].loading = false;
+          tabStates[idx].error = true;
+          var msg = err.message || 'Search failed';
+          var detail = '';
+          if (err.status === 429 || err.code === 'rate_limit_exceeded') {
+            msg = 'Rate limit exceeded';
+            var h = err.headers || {};
+            var parts = [];
+            if (h.limitSecond) parts.push('Limit/sec: ' + h.limitSecond);
+            if (h.limitMinute) parts.push('Limit/min: ' + h.limitMinute);
+            if (typeof h.remaining === 'number') parts.push('Remaining: ' + h.remaining);
+            if (err.data && err.data.retryAfter) parts.push('Retry after: ' + err.data.retryAfter + 's');
+            if (parts.length) detail = parts.join(' \u00b7 ');
+          }
+          if (err.status === 402) msg = 'Insufficient credits';
+          if (err.status === 504) msg = 'Search timed out';
+          tabStates[idx].errorMessage = msg;
+          tabStates[idx].errorDetail = detail;
+          updateTabLabel(idx);
+          renderPanel(idx, { error: true, errorMessage: msg, errorDetail: detail });
+        })
+        .finally(function() {
+          checkAllDone();
+        });
+    }
+
+    function checkAllDone() {
+      var allDone = tabStates.every(function(s) { return !s.loading; });
+      if (allDone) simBtn.disabled = false;
+    }
+
+    function runSimulation() {
+      var currentKey = apiKeyInput.value.trim();
+      if (currentKey && currentKey !== API_KEY) {
+        API_KEY = currentKey;
+      }
+      initClient(API_KEY);
+      if (!client) { alert('SDK not loaded'); return; }
+
+      var n = simCount;
+      var parts = SAMPLE_PARTS.slice(0, n);
+
+      simBtn.disabled = true;
+      tabStates = [];
+      tabBar.innerHTML = '';
+      tabPanels.innerHTML = '';
+
+      parts.forEach(function(part, i) {
+        tabStates.push({ part: part, loading: false, error: false, resultCount: 0, errorMessage: '' });
+
+        var btn = document.createElement('button');
+        btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+        btn.textContent = part;
+        btn.addEventListener('click', function() { activateTab(i); });
+        tabBar.appendChild(btn);
+
+        var panel = document.createElement('div');
+        panel.className = 'tab-panel' + (i === 0 ? ' active' : '');
+        panel.innerHTML = '<div class="panel-status">Waiting\u2026</div>';
+        tabPanels.appendChild(panel);
+      });
+
+      tabsWrap.classList.remove('hidden');
+
+      if (n <= 3) {
+        parts.forEach(function(_, i) { fireSearch(i); });
+      } else {
+        parts.slice(0, 3).forEach(function(_, i) { fireSearch(i); });
+        setTimeout(function() { fireSearch(3); }, 1000);
+      }
+    }
+
+    simBtn.addEventListener('click', runSimulation);
+  </script>
+</body>
+</html>
